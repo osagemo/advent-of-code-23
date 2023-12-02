@@ -69,6 +69,7 @@ func Part2(input string) int {
 }
 
 func main() {
+	input := strings.ReplaceAll(input, "\r\n", "\n")
 	fmt.Println("Day 1")
 	start := time.Now()
 	fmt.Println("Part 1: ", Part1(input))
