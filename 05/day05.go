@@ -43,36 +43,20 @@ func Part1(input string) int {
 // Function Must Locate...
 func Part2(input string) int {
 	seedRanges := parseSeedsPart2(input)
-	fmt.Println(seedRanges)
+	reverseTypeToAlmanacMap := mapSourceToAlmanacMaps(input, true)
 
-	typeToAlmanacMap := mapSourceToAlmanacMaps(input, false)
-	soilToLocation := map[int]int{}
-	soilIndexes := []int{}
-	lowestLocation := math.MaxInt32
-	lowestSoilIndex := 0
-
-	for _, soilRange := range typeToAlmanacMap["soil"].ranges {
-		for i := soilRange.sourceStart; i < soilRange.sourceStart+soilRange.length; i++ {
-			location := findPart1("soil", i, typeToAlmanacMap)
-			if location < lowestLocation {
-				lowestLocation = location
+	// Brute force the lowest possible location by mapping any location number
+	// and checking if it is within any of the seed ranges...
+	for possibleLocation := 0; possibleLocation < math.MaxInt32; possibleLocation++ {
+		mappedSeed := findPart1("location", possibleLocation, reverseTypeToAlmanacMap)
+		for _, seedRange := range seedRanges {
+			if withinRange(mappedSeed, seedRange) {
+				return possibleLocation
 			}
 		}
 	}
 
-	// locations := []int{}
-	// reverseTypeToAlmanacMap := mapSourceToAlmanacMaps(input, true)
-	// possibleLocations := []int{}
-	// for _, almRange := range typeToAlmanacMap["humidity"].ranges {
-	// 	for i := almRange.sourceStart; i < almRange.sourceStart+almRange.length; i++ {
-	// 		location := findPart1("humidity", i, typeToAlmanacMap)
-	// 		fmt.Println("found location", location, "for humidity", i)
-	// 		possibleLocations = append(possibleLocations, location)
-	// 	}
-	// }
-
-	// return slices.Min(locations)
-	return 0
+	return -1
 }
 
 func parseSeedsPart1(input string) []int {
@@ -165,7 +149,7 @@ func findPart1(dest string, value int, maps map[string]almanacMap) int {
 
 	target := 0
 	for _, almanacRange := range almanacMap.ranges {
-		if value >= almanacRange.sourceStart && value < almanacRange.sourceStart+almanacRange.length {
+		if withinRange(value, almanacRange) {
 			target = almanacRange.destStart + (value - almanacRange.sourceStart)
 		}
 	}
@@ -176,36 +160,9 @@ func findPart1(dest string, value int, maps map[string]almanacMap) int {
 	return findPart1(almanacMap.dest, target, maps)
 }
 
-// nopers
-// func findPart2(dest string, value int, maps map[string]almanacMap,reversemaps map[string]almanacMap, possibleLocations []int, seenPrevious []int) []int {
-//     reverseMap, ok := maps[dest]
-//     if !ok {
-//         return possibleLocations
-//     }
-//
-//     // use all humidity source values via findPart1 + all humidity target values to create initial possibleLocations
-//
-//     for _, almanacRange := range almanacMap.ranges {
-//
-//     }
-//
-//     mappedValue := 0
-//     for _, almanacRange := range almanacMap.ranges {
-//         for i := almanacRange.sourceStart; i < almanacRange.sourceStart+almanacRange.length; i++ {
-//             for j := almanacRange.destStart; j < almanacRange.destStart+almanacRange.length; j++ {
-//                 possibleLocations = findPart1(almanacMap.source, j, maps)
-//         }
-//         if value >= almanacRange.sourceStart && value < almanacRange.sourceStart+almanacRange.length {
-//             mappedValue = almanacRange.destStart + (value - almanacRange.sourceStart)
-//         }
-//     }
-//     if mappedValue == 0 {
-//         mappedValue = value
-//         possibleLocations = append(possibleLocations, mappedValue)
-//     }
-//
-// }
-// }
+func withinRange(value int, almanacRange almanacRange) bool {
+	return value >= almanacRange.sourceStart && value < almanacRange.sourceStart+almanacRange.length
+}
 
 func main() {
 	input := strings.ReplaceAll(input, "\r\n", "\n")
